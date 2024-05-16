@@ -1,0 +1,68 @@
+configs:
+  traefik.yml:
+    file: traefik.yml
+  prometheus.yml:
+    file: prometheus.yml
+
+services:
+  student-server:
+    depends_on:
+      - mongo 
+    networks:
+      - 'student-server'
+    image: "student-server"
+    environment:
+      MONGO_HOST: 'traefik.xyz'
+      MONGO_PORT: 27017
+      MONGO_USER: 'admin'
+      MONGO_PASSWORD: 'admin'
+      PROMETHEUS_PORT: 9000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.student-server.rule=PathPrefix(`/student-server`)"
+      - "traefik.http.routers.student-server.middlewares=student-server-mw"
+      - "traefik.http.middlewares.student-server-mw.stripprefix.prefixes=/student-server"
+      - "traefik.http.routers.student-server.entrypoints=web"
+
+  traefik:
+    networks:
+      - 'student-server'
+    image: "traefik:v3.0.0"
+    hostname: 'traefik.xyz'
+    configs:
+      - source: traefik.yml
+        target: /etc/traefik/traefik.yml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "80:80"
+
+  prometheus:
+    networks:
+      - 'student-server'
+    image: "prom/prometheus:v2.52.0"
+    configs:
+      - source: prometheus.yml
+        target: /etc/traefik/prometheus.yml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=PathPrefix(`/prometheus`)"
+      - "traefik.http.routers.prometheus.middlewares=prometheus-mw"
+      - "traefik.http.middlewares.prometheus-mw.stripprefix.prefixes=/prometheus"
+      - "traefik.http.routers.prometheus.entrypoints=web"
+
+  mongo:
+    networks:
+      - 'student-server'
+    image: "mongo:7.0"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin 
+      MONGO_INITDB_ROOT_PASSWORD: admin 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.mongo.entrypoints=mongo"
+      - "traefik.tcp.routers.mongo.rule=HostSNI(`*`)"
+
+networks:
+  student-server:
+    driver: bridge

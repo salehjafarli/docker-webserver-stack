@@ -1,0 +1,22 @@
+api:
+  dashboard: true
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+  file:
+    filename: '/etc/traefik/traefik.yml'
+
+entryPoints:
+  web:
+   address: ":80"
+  mongo:
+   address: ":27017"
+
+http:
+  routers:
+    traefik:
+      entrypoints:
+        - web
+      rule : 'PathPrefix(`/`)'
+      service: 'api@internal'
