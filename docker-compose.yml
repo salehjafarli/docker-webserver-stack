@@ -44,7 +44,7 @@ services:
     image: "prom/prometheus:v2.52.0"
     configs:
       - source: prometheus.yml
-        target: /etc/traefik/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prometheus.rule=PathPrefix(`/prometheus`)"
