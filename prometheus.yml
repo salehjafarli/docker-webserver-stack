@@ -1,5 +1,5 @@
 scrape_configs:
-  - job_name: 'prometheus'
+  - job_name: 'promkjetheus'
     scrape_interval: 5s
     static_configs:
-      - targets: ['student-server.xyz:9000']
+      - targets: ['traefik.xyz:9000']

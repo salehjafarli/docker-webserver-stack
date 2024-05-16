@@ -11,6 +11,7 @@ services:
     networks:
       - 'student-server'
     image: "student-server"
+    hostname: 'student-server.xyz'
     environment:
       MONGO_HOST: 'traefik.xyz'
       MONGO_PORT: 27017
